@@ -16,6 +16,9 @@ nivel de confianza y explicación.
 - Dashboard con probabilidad, puntos esperados, confianza y motivo.
 - Backtesting con torneos anteriores.
 - Actualización antes del partido: T-24h, T-6h y T-1h (alineaciones).
+- **Evaluación post-partido:** te dice qué picks acertaron ✅, cuáles quedaron
+  parciales 🟡, cuáles fallaron ❌ y quiénes no jugaron ⚪.
+- Notificación opcional por dashboard, Telegram o email.
 
 ## Stack
 

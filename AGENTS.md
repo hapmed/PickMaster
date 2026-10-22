@@ -71,7 +71,53 @@ Fuentes de datos (API/CSV)
 3. **T-1h:** alineaciones confirmadas; recalcular picks y marcar confianza.
 4. **Publicación:** top picks por posición, con puntos esperados, probabilidad,
    rango y explicación.
-5. **Post-partido:** guardar resultado real y evaluar la proyección.
+5. **Post-partido:** guardar resultado real, evaluar cada pick y avisar.
+
+## 4.1 Resultados post-partido
+
+Cuando termina el partido, el worker espera las estadísticas finales
+(T+1h y reintento a T+3h) y evalúa cada pick.
+
+### Regla de acierto
+
+Cada pick se publica con un `target_points` (por defecto, la **mediana** de la
+simulación; configurable). Después del partido:
+
+| Resultado | Condición | Icono |
+|---|---|---|
+| `hit` | puntos reales ≥ `target_points` | ✅ |
+| `partial` | puntos reales ≥ p25 y < target | 🟡 |
+| `miss` | puntos reales < p25 | ❌ |
+| `no_play` | 0 minutos o no jugó | ⚪ |
+
+- Se calculan los puntos reales con **las mismas reglas** del concurso.
+- Se guarda `actual_points`, `minutes`, `error` (real − esperado) y `result`.
+- Se actualiza el reporte del partido y el acumulado del modelo.
+
+### Mensaje al usuario
+
+Al terminar la evaluación:
+
+```
+PickMaster · [Partido]
+✅ Acertaron: Jugador A, Jugador B
+🟡 Parcial: Jugador C
+❌ Fallaron: Jugador D
+⚪ No jugaron: Jugador E
+Resultado: 2/5 picks acertados
+```
+
+- Se muestra en el dashboard.
+- Notificación opcional por **Telegram** o **email** (canal configurable).
+- El mensaje incluye el marcador y la jornada.
+
+### Aprendizaje
+
+- No reentrenar con un solo partido.
+- Acumular resultados por jornada/torneo.
+- Revisar calibración y errores por posición.
+- Si un pick falla por lesión o expulsión, marcarlo como contexto, no como error
+  del modelo.
 
 ## 5. Modelo
 
@@ -126,13 +172,19 @@ Fuentes de datos (API/CSV)
 | `GET` | `/api/picks?match_id=` | Picks del partido |
 | `GET` | `/api/players/{id}/projection` | Proyección del jugador |
 | `GET` | `/api/backtest` | Resultados del backtest |
+| `GET` | `/api/results?match_id=` | Resultado de los picks |
+| `GET` | `/api/results/summary` | Aciertos acumulados |
+| `POST` | `/api/admin/evaluate?match_id=` | Evaluar un partido |
 | `POST` | `/api/admin/refresh` | Forzar actualización |
 
 ## 8. Datos
 
 - `teams`, `players`, `matches`, `player_stats`, `lineups`, `injuries`.
 - `projections`: jugador, partido, media, mediana, p10, p90, confianza.
-- `picks`: partido, jugador, posición, puntos esperados, probabilidad, motivo.
+- `picks`: partido, jugador, posición, puntos esperados, `target_points`,
+  probabilidad y motivo.
+- `pick_results`: pick_id, puntos reales, minutos, `result`, error, evaluado_en.
+- `match_reports`: partido, total, hits, partials, misses, no_play, hit_rate.
 - `model_runs`: versión, fecha, métricas.
 - `contest_rules`: reglas y salarios cargados.
 - `audit_log`: cambios manuales.
@@ -143,7 +195,9 @@ Fuentes de datos (API/CSV)
 - Picks por posición con probabilidad y puntos esperados.
 - Detalle del jugador: forma, minutos, matchup y riesgo.
 - Semáforo de confianza.
-- Historial de aciertos y calibración.
+- **Resultados post-partido:** ✅ acertó, 🟡 parcial, ❌ falló, ⚪ no jugó.
+- Comparación puntos esperados vs reales.
+- Historial de aciertos, rachas y calibración.
 - Aviso visible: “No garantiza resultados. Juega con responsabilidad.”
 
 ## 10. Fases
@@ -154,6 +208,7 @@ Fuentes de datos (API/CSV)
 - Modelo de minutos y puntos.
 - Picks por partido en JSON.
 - CLI o endpoint para generar picks.
+- Evaluación post-partido: `hit`, `partial`, `miss`, `no_play` y hit rate.
 
 ### Fase 2 — Dashboard
 - SvelteKit con jornada, picks y detalle.
@@ -165,7 +220,9 @@ Fuentes de datos (API/CSV)
 - Jobs T-24h/T-6h/T-1h.
 - Alertas de lesiones/alineaciones.
 - Actualización de picks.
-- Registro de resultados.
+- Evaluación automática al terminar el partido.
+- Reporte y notificación por Telegram/email.
+- Registro histórico de aciertos.
 
 ### Fase 4 — Mejora
 - Más features y modelos.
@@ -180,6 +237,8 @@ Fuentes de datos (API/CSV)
 - [ ] Se generan picks por partido y posición.
 - [ ] Cada pick incluye probabilidad, puntos esperados y confianza.
 - [ ] Backtest con un torneo anterior.
+- [ ] Al terminar un partido se evalúan los picks y se calcula el hit rate.
+- [ ] El reporte muestra ✅/🟡/❌/⚪ y puntos esperados vs reales.
 - [ ] No hay fuga de datos.
 - [ ] No hay secretos en Git.
 

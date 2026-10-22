@@ -23,9 +23,17 @@
     "penalty_saved": null,
     "penalty_missed": null
   },
+  "picks": {
+    "target": "p50",
+    "partial_threshold": "p25",
+    "top_n_per_position": 3,
+    "notify": ["dashboard"]
+  },
   "notes": [
     "No asumir valores: copiar las reglas exactas del concurso.",
     "Los salarios se cargan por CSV o manualmente.",
-    "No scrapear Draftea."
+    "No scrapear Draftea.",
+    "target=p50: el pick acierta si supera la mediana simulada.",
+    "partial_threshold=p25: queda parcial si supera el percentil 25."
   ]
 }

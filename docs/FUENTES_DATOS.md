@@ -36,6 +36,15 @@
 - Reglas de puntuación del concurso.
 - Salarios de los jugadores (manual/CSV).
 
+## Post-partido
+
+- Estadísticas finales: minutos, goles, asistencias, tiros, pases clave,
+  entradas, paradas, tarjetas y goles recibidos.
+- Pueden tardar; reintentar a T+1h y T+3h.
+- Calcular puntos reales con las reglas del concurso.
+- Comparar con la proyección y guardar `pick_results`.
+- Si el jugador no jugó, marcar `no_play`, no `miss`.
+
 ## Calidad
 
 - Validar que los minutos sumen.

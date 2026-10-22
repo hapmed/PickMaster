@@ -92,6 +92,48 @@ ranking + valor + confianza + explicación
 - Simulación de percentiles frente a un campo sintético.
 - Reporte por jornada y por posición.
 
+## Evaluación post-partido
+
+Cuando termina el partido se calculan los puntos reales con las mismas reglas y
+se compara cada pick contra su `target_points` (por defecto, la mediana de la
+simulación).
+
+| Resultado | Condición |
+|---|---|
+| ✅ `hit` | real ≥ target |
+| 🟡 `partial` | real ≥ p25 y < target |
+| ❌ `miss` | real < p25 |
+| ⚪ `no_play` | 0 minutos o no jugó |
+
+Se guarda:
+
+- Puntos reales y minutos.
+- Error (real − esperado).
+- Resultado y explicación.
+- Hit rate del partido y acumulado.
+
+### Reporte
+
+```
+PickMaster · [Partido]
+✅ Acertaron: Jugador A, Jugador B
+🟡 Parcial: Jugador C
+❌ Fallaron: Jugador D
+⚪ No jugaron: Jugador E
+Resultado: 2/5 picks acertados
+```
+
+- Visible en el dashboard.
+- Notificación opcional por Telegram/email.
+- Se acumula por jornada y torneo.
+
+### Uso para mejorar el modelo
+
+- No reentrenar con un solo partido.
+- Revisar errores por posición y tipo de jugador.
+- Separar fallos por contexto (lesión, expulsión, rotación).
+- Ajustar calibración con datos acumulados, no con una racha.
+
 ## Riesgos y límites
 
 - Datos incompletos o tardíos.

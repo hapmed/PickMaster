@@ -43,7 +43,8 @@ Fuentes (API/CSV)
 - **T-24h:** picks preliminares.
 - **T-6h:** actualización.
 - **T-1h:** alineaciones confirmadas y picks finales.
-- **Post-partido:** resultados y evaluación.
+- **Post-partido:** estadísticas finales, evaluación de picks, reporte y
+  notificación (dashboard/Telegram/email).
 
 ## API
 
@@ -55,14 +56,17 @@ Fuentes (API/CSV)
 | `GET` | `/api/picks?match_id=` | Picks |
 | `GET` | `/api/players/{id}/projection` | Proyección |
 | `GET` | `/api/backtest` | Métricas |
+| `GET` | `/api/results?match_id=` | Resultados de picks |
+| `GET` | `/api/results/summary` | Hit rate acumulado |
+| `POST` | `/api/admin/evaluate?match_id=` | Evaluar partido |
 | `POST` | `/api/admin/refresh` | Refrescar |
 
 ## Base de datos
 
 - `teams`, `players`, `matches`.
 - `player_stats`, `lineups`, `injuries`.
-- `projections`, `picks`, `model_runs`.
-- `contest_rules`, `audit_log`.
+- `projections`, `picks`, `pick_results`, `match_reports`.
+- `model_runs`, `contest_rules`, `audit_log`.
 
 ## Despliegue
 
