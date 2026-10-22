@@ -1,0 +1,38 @@
+# Secretos
+ACCESOS.md
+contras.txt
+.env
+.env.*
+!.env.example
+config/contest_rules.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Node / SvelteKit
+node_modules/
+.svelte-kit/
+build/
+dist/
+coverage/
+
+# Datos / modelos
+data/raw/
+data/processed/
+models/
+logs/
+*.log
+*.csv
+*.parquet
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

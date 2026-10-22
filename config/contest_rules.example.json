@@ -1,0 +1,31 @@
+{
+  "platform": "Draftea",
+  "league": "Liga MX",
+  "status": "PENDIENTE: completar con las reglas vigentes del concurso",
+  "roster": {
+    "positions": ["GK", "DEF", "MID", "FWD"],
+    "salary_cap": null,
+    "players_per_team_max": null
+  },
+  "scoring": {
+    "minutes_played": null,
+    "goal": null,
+    "assist": null,
+    "shot_on_target": null,
+    "key_pass": null,
+    "tackle": null,
+    "save": null,
+    "clean_sheet": null,
+    "goals_conceded": null,
+    "yellow_card": null,
+    "red_card": null,
+    "own_goal": null,
+    "penalty_saved": null,
+    "penalty_missed": null
+  },
+  "notes": [
+    "No asumir valores: copiar las reglas exactas del concurso.",
+    "Los salarios se cargan por CSV o manualmente.",
+    "No scrapear Draftea."
+  ]
+}
