@@ -49,8 +49,6 @@ class TestPicksAndResults:
         assert res404.status_code == 404
 
     def test_top_picks_fallback(self, client: TestClient) -> None:
-        """Devuelve top por score con explicación; si nadie pasa el umbral
-        activa el fallback etiquetando riesgo (ramas según confidence)."""
         res = client.get("/api/matches")
         match = next(m for m in res.json()["matches"] if m["status"] == "scheduled")
         top = client.get(

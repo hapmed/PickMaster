@@ -349,11 +349,25 @@ def results_summary(db: Session = Depends(get_session)) -> dict[str, Any]:
 
 @router.get("/backtest")
 def backtest(db: Session = Depends(get_session)) -> dict[str, Any]:
-    """Resumen de evaluación histórica (placeholder de Fase 1)."""
-    summary = evaluation.summary(db)
+    """Última corrida del backtest real (Fase 4); dispara una si no existe."""
+    from app.services import backtest as bt
+
+    latest = bt.latest_run(db)
+    if latest is None:
+        # primera consulta: corrida una vez con la ventana por defecto
+        metrics = bt.run_backtest(db)
+        db.commit()
+        if metrics.get("state") == "pending":
+            return {"note": "histórico insuficiente; ingesta más partidos", **metrics}
+        latest = bt.latest_run(db)
+    assert latest is not None
     return {
-        "note": "backtest completo en Fase 1 (mae/brier por jornada): ver CLI",
-        **summary,
+        "note": (
+            "backtest con corte anti-fuga: últimos partidos como validación; "
+            "P(X>=T) aproximada por percentiles"
+        ),
+        "version": "v0.2-backtest",
+        **latest,
     }
 
 

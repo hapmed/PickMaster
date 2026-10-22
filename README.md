@@ -53,34 +53,49 @@ nivel de confianza y explicación.
 
 ## Estado
 
-**Fases 1–3 implementadas** (Fase 4 pendiente de datos históricos reales).
+**Fases 1–4 implementadas** (Fase 4: backtest real con datos ESPN).
 
 | Bloque | Estado |
 |---|---|
 | Backend FastAPI + SQLAlchemy (todas las rutas de la tabla API) | ✅ |
 | Motor de proyección: minutos + eventos + Monte Carlo 10k | ✅ determinista |
 | Picks por posición + **SELECCIÓN 5 ESTRELLAS** (probabilidad × puntos × confianza, con sección "¿Por qué?") | ✅ `/api/picks/top` |
-| Evaluación post-partido ✅🟡❌⚪ + hit rate + reporte | ✅ |
+| Evaluación post-partido ✅🟡❌⚪ + hit rate + reporte — **con stats reales ESPN ya ingesta automática** | ✅ |
 | Ingesta manual por CSV (reglas, salarios, XI confirmado) | ✅ |
-| **Ingesta online TheSportsDB** (equipos + jugadores + calendario Liga MX, key pública `123`, acumulativa y respetando 429) | ✅ con datos reales |
+| **Ingesta ESPN** (fixtures 95 partidos, 3147 stats por jugador, rosters completos 611 jugadores, alineaciones confirmadas post-partido; llamada respetuosa 3s/UA) | ✅ `app/ingestion/espn.py` |
+| Ingesta online TheSportsDB (equipos/jugadores/calendario, key pública `123`, acumulativa y respetando 429) | ✅ reservada a rosters restantes |
 | Alineaciones/convocatorias estimadas del roster (`/api/lineups`) | ✅ |
-| Dashboard SvelteKit estilo **Super Campeones**: chibis SVG por jugador (determinista), alineaciones por posición probables, picks top con "¿Por qué?", mensajes hilarantes en carga/errores/estados vacíos | ✅ build OK |
-| Scheduler Fase 3 (T-24h / T-6h / T-1h + evaluación post-partido con ledger `worker_jobs`) | ✅ testado |
+| Dashboard SvelteKit estilo **Super Campeones**: chibis SVG por jugador (determinista), alineaciones por posición probables, picks top con "¿Por qué?", mensajes hilarantes | ✅ build OK |
+| Scheduler Fase 3 (T-24h / T-6h / T-1h + evaluación post-partido con ledger `worker_jobs`) — T-24h trae agenda ESPN, post-partido trae stats ESPN antes de evaluar | ✅ testado; activo con `PICKMASTER_ESPN_SCHEDULE=1` |
 | Notificación Telegram/email (interesados: env por claves) | ✅ módulo listo; sin credencial es irrelevante en dashboard |
-| Lint/mypy/pytest backend | ✅ 26 tests · ruff · mypy strict |
+| Lint/mypy/pytest backend | ✅ 34 tests · ruff · mypy strict |
 | Dashboard checks | ✅ svelte-check 0 errors · vitest · vite build |
-| **Despliegue HomeLab** (compose `pickmaster_*` en apps-net, BD Postgres `pickmaster`, túnel Cloudflare con regla aditiva) | ✅ vivo en `pickmaster.hapmed.qzz.io` |
+| Despliegue HomeLab (compose `pickmaster_*` en apps-net, BD Postgres `pickmaster`, túnel Cloudflare con regla aditiva) | ✅ vivo en `pickmaster.hapmed.qzz.io` |
+| **Backtest Fase 4** (corte anti-fuga, MAE por posición, baseline, calibración percentilística, Brier por umbral, titularidad) sobre 587 rows reales | ✅ `/api/backtest` · CLI `backtest` |
 | Backtest con torneos anteriores | ⬜ bloqueado por falta de datos históricos por jugador |
 
 ### Datos actuales (sin usar datos demo)
 
-- **17 equipos, ~135 jugadores reales de Liga MX 2026-27** (ingesta TheSportsDB;
-  Mazatlán rescatado por id directo por una rareza del free tier).
-- Próximo partido **Necaxa vs Juárez** (2026-10-24) con picks reales generados
-  y convocatorias por posición.
-- Límite honesto: sin estadísticas evento-a-evento del free tier la confianza
-  sale **35%** y las menciones de "pocos datos históricos" son correctas.
-  Con una API key premium (API-Football/Statful) se elevaría la precisión.
+- **18 equipos (con Pachuca), 611 jugadores reales de Liga MX 2026-27**:
+  rosters completos vía ESPN.
+- **95 partidos y 3.147 player_stats** reales (jornadas del Apertura vía ESPN).
+- Próximo partido **Necaxa vs Juárez** (2026-10-24) con picks y convocatorias;
+  agenda de la semana completa ingesta T-24h automática.
+- Límite honesto: los features usan sólo partidos anteriores al kickoff
+  (corte anti-fuga). El backtest muestra que la calibración en cola
+  izquierda/percentiles altos es optimista; se mejorará en iteraciones.
+  Reglas aún PROVISIONAL: cargar `config/contest_rules.json` con las reales.
+
+### Resultados del backtest (ventana 14 partidos, 587 filas, 2026-10-22)
+
+| Métrica | Valor |
+|---|---|
+| MAE puntos (mediana del modelo, jugando) | 2.95 |
+| Baseline (mediana global constante) | 2.95 → el modelo empata baseline en media, gana por separación por posición (DEF 2.27, MID 2.76 vs FWD 3.69, GK 4.23) |
+| MAE minutos esperados | 26.8 (alto: aún sin modelo de rotación fino) |
+| Cobertura p25/p50/p75/p90 observada | 0.62 / 0.53 / 0.43 / 0.29 (esperado 0.75/0.5/0.25/0.10 → optimista en colas) |
+| Brier por umbral 4/6/8 | 0.34 / 0.14 / 0.12 |
+| Calibración titularidad (bins 0-0.5/0.5-0.8/0.8+) | 0.27 / 0.58 / 0.89 observado — bien calibrado |
 
 ### Cómo correr (local, ya funciona)
 
@@ -94,4 +109,6 @@ cd frontend && npm run dev        # proxy al API: configuras .env PUBLIC_API_URL
 cd frontend && npm run build       # adapter-node listo para Docker
 ```
 
-Pendiente de definir: fuente de datos y reglas exactas del concurso de Draftea.
+Pendiente: reglas exactas del concurso de Draftea (manual →
+`config/contest_rules.json`). Los pesos provisionales se marcan como tal
+en `/api/health`.

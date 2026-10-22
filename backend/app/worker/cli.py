@@ -12,6 +12,7 @@ Uso:
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 
 from app.db import create_all, new_session, setup_engine
@@ -129,6 +130,19 @@ def cmd_ingest_espn(args: argparse.Namespace) -> None:
         session.close()
 
 
+def cmd_backtest(args: argparse.Namespace) -> None:
+    """Fase 4: backtest con corte anti-fuga y calibración."""
+    from app.services import backtest
+
+    session = new_session()()
+    try:
+        metrics = backtest.run_backtest(session, validation_matches=args.matches)
+        session.commit()
+        print(json.dumps(metrics, indent=2, ensure_ascii=False))
+    finally:
+        session.close()
+
+
 def cmd_scheduler(_args: argparse.Namespace) -> None:
     """Loop continuo del worker (Fase 3)."""
     from app.worker.scheduler import run_forever
@@ -153,6 +167,9 @@ def main() -> None:
     espn_cmd.add_argument("--days-back", type=int, default=8)
     espn_cmd.add_argument("--days-forward", type=int, default=14)
     espn_cmd.set_defaults(func=cmd_ingest_espn)
+    bt = sub.add_parser("backtest")
+    bt.add_argument("--matches", type=int, default=12)
+    bt.set_defaults(func=cmd_backtest)
     gen = sub.add_parser("generate-picks")
     gen.add_argument("--match", type=int, required=True)
     gen.set_defaults(func=cmd_generate_picks)
