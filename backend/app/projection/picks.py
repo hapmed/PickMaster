@@ -40,6 +40,7 @@ class PlayerProjection:
     start_probability: float
     confidence: float
     explanation: str
+    events: dict[str, float] | None = None
 
 
 def collect_match_players(db: Session, match: models.Match) -> list[models.Player]:
@@ -140,20 +141,44 @@ def project_match(
             feat, rates, downgrade, rules, n_sims=settings.mc_sims, rng=_rng_for(match, player.id)
         )
         moments = sim.summarize(points)
+        minutes_expected = float(
+            np.clip(sim.minutes_distribution(feat)[0] * sim.start_probability(feat), 0, 90)
+        )
         proj = PlayerProjection(
             player_id=player.id,
             position=player.position,
             moments=moments,
-            minutes_expected=float(np.clip(
-                sim.minutes_distribution(feat)[0] * sim.start_probability(feat), 0, 90
-            )),
+            minutes_expected=minutes_expected,
             start_probability=sim.start_probability(feat),
             confidence=build_confidence(feat, lineup_ok, feat.injured),
             explanation=build_explanation(feat, rival_factor, lineup_ok),
+            events=expected_events(rates, minutes_expected),
         )
         projections.append(proj)
 
     return projections
+
+
+EVENT_LABELS: tuple[str, ...] = (
+    "goals",
+    "assists",
+    "shots_on_target",
+    "key_passes",
+    "tackles",
+    "saves",
+)
+
+
+def expected_events(rates: sim.EventRates, minutes_expected: float) -> dict[str, float]:
+    """Valor esperado de cada evento del jugador en el partido.
+
+    E[evento] = tasa por 90 × minutos esperados / 90. Es la misma tasa que
+    alimenta el Monte Carlo, proyectada sobre los minutos con que ilustramos.
+    """
+    instr = max(minutes_expected, 0.0) / 90.0
+    return {
+        name: round(getattr(rates, name, 0.0) * instr, 2) for name in EVENT_LABELS
+    }
 
 
 def save_projections(
@@ -186,6 +211,7 @@ def save_projections(
             start_probability=p.start_probability,
             confidence=p.confidence,
             explanation=p.explanation,
+            expected_events=p.events,
         )
         db.add(row)
         rows.append(row)

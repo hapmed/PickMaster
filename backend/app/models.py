@@ -10,6 +10,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     DateTime,
     Float,
@@ -176,6 +177,8 @@ class Projection(db.Base):
     start_probability: Mapped[float] = mapped_column(Float)
     confidence: Mapped[float] = mapped_column(Float)  # 0..1
     explanation: Mapped[str | None] = mapped_column(Text)
+    #: Valores esperados por evento (goles, asistencias, etc.) guardados como JSON.
+    expected_events: Mapped[dict[str, float] | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
 
 

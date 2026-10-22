@@ -215,6 +215,7 @@ def top_picks(
                     "minutes_expected": proj.minutes_expected if proj else None,
                     "start_probability": proj.start_probability if proj else None,
                     "confidence": proj.confidence if proj else None,
+                    "expected_events": proj.expected_events if proj else None,
                 },
                 "gold_status": "SUPER SHOT ATÓMICO"
                 if pick.probability >= 0.9
@@ -311,6 +312,7 @@ def player_projection(
         "start_probability": row.start_probability,
         "confidence": row.confidence,
         "explanation": row.explanation,
+        "expected_events": row.expected_events,
     }
 
 

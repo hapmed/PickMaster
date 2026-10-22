@@ -24,8 +24,8 @@
     </nav>
   {/if}
 
-  <TopPicks top={data.top ?? []} />
-  <Picks picks={data.picks ?? []} />
+  <TopPicks top={data.top ?? []} matchId={data.partidoId} />
+  <Picks picks={data.picks ?? []} matchId={data.partidoId} />
   <Lineups teams={data.teams ?? []} />
 {:else if data.estado === "vacio"}
   <div class="card centrado section">

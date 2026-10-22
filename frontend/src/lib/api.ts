@@ -1,6 +1,26 @@
-/** Cliente de la API de PickMaster (base URL configurable via PUBLIC_API_URL). */
+/** Cliente de la API de PickMaster. Browser: rutas relativas /api (proxy del edge). SSR: URL interna. */
 
-import { env } from "$env/dynamic/public";
+import { browser } from "$app/environment";
+
+let cachedBase: string | null = null;
+
+async function base(): Promise<string> {
+  if (cachedBase !== null) return cachedBase;
+  if (browser) {
+    cachedBase = "";
+    return cachedBase;
+  }
+  // SSR: la URL difundida por el build/compose (p. ej. http://pickmaster-api:8000)
+  let pub = "";
+  try {
+    const { env } = await import("$env/dynamic/public");
+    pub = env.PUBLIC_API_URL ?? "";
+  } catch {
+    pub = "";
+  }
+  cachedBase = pub || "http://127.0.0.1:8000";
+  return cachedBase;
+}
 
 export type Pick = {
   player_id: number;
@@ -18,6 +38,15 @@ export type TopPick = Pick & {
   top_score: number;
   why: string[];
   gold_status: string;
+  statistics?: {
+    mean?: number | null;
+    median?: number | null;
+    p90?: number | null;
+    minutes_expected?: number | null;
+    start_probability?: number | null;
+    confidence?: number | null;
+    expected_events?: Record<string, number> | null;
+  } | null;
 };
 
 export type Match = {
@@ -36,10 +65,27 @@ export type Squad = {
   players: Array<{ id: number; name: string; position: string }>;
 };
 
-const BASE: string = env.PUBLIC_API_URL || "http://127.0.0.1:8000";
+export type Proyeccion = {
+  player_id: number;
+  match_id: number;
+  model: string;
+  mean: number;
+  median: number;
+  p10: number;
+  p25: number;
+  p75: number;
+  p90: number;
+  minutes_expected: number;
+  start_probability: number;
+  confidence: number;
+  explanation?: string | null;
+  expected_events?: Record<string, number> | null;
+};
+
+
 
 export async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`);
+  const res = await fetch(`${await base()}${path}`);
   if (!res.ok) {
     throw new Error(`API ${path} → ${res.status}`);
   }
@@ -54,4 +100,6 @@ export const api = {
     get<{ top_picks: TopPick[] }>(`/api/picks/top?match_id=${matchId}`),
   lineups: (matchId: number) =>
     get<{ teams: Squad[] }>(`/api/lineups?match_id=${matchId}`),
+  projection: (playerId: number, matchId: number) =>
+    get<Proyeccion>(`/api/players/${playerId}/projection?match_id=${matchId}`),
 };

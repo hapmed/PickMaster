@@ -78,6 +78,18 @@ class TestPicksAndResults:
         assert proj.status_code == 200
         body = proj.json()
         assert body["p10"] <= body["median"] <= body["p90"]
+        # proyecciones nuevas traen eventos esperados (goles, asistencias, ...)
+        events = body.get("expected_events")
+        assert isinstance(events, dict)
+        assert set(events) == {
+            "goals",
+            "assists",
+            "shots_on_target",
+            "key_passes",
+            "tackles",
+            "saves",
+        }
+        assert all(v >= 0 for v in events.values())
 
     def test_results_summary_empty(self, client: TestClient) -> None:
         res = client.get("/api/results/summary")
