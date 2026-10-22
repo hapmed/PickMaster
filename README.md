@@ -65,7 +65,7 @@ nivel de confianza y explicación.
 | **Ingesta ESPN** (fixtures 95 partidos, 3147 stats por jugador, rosters completos 611 jugadores, alineaciones confirmadas post-partido; llamada respetuosa 3s/UA) | ✅ `app/ingestion/espn.py` |
 | Ingesta online TheSportsDB (equipos/jugadores/calendario, key pública `123`, acumulativa y respetando 429) | ✅ reservada a rosters restantes |
 | Alineaciones/convocatorias estimadas del roster (`/api/lineups`) | ✅ |
-| Dashboard SvelteKit estilo **Super Campeones**: chibis SVG por jugador (determinista), alineaciones por posición probables, picks top con "¿Por qué?", mensajes hilarantes | ✅ build OK |
+| Dashboard SvelteKit con estética Apple HIG: insignias de camiseta por jugador (determinista), selector de partidos, filas de picks por posición, alineaciones en chips, claro/oscuro automáticos, contraste AA | ✅ check+test+build OK |
 | Scheduler Fase 3 (T-24h / T-6h / T-1h + evaluación post-partido con ledger `worker_jobs`) — T-24h trae agenda ESPN, post-partido trae stats ESPN antes de evaluar | ✅ testado; activo con `PICKMASTER_ESPN_SCHEDULE=1` |
 | Notificación Telegram/email (interesados: env por claves) | ✅ módulo listo; sin credencial es irrelevante en dashboard |
 | Lint/mypy/pytest backend | ✅ 34 tests · ruff · mypy strict |

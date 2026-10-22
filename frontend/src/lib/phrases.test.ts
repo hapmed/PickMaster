@@ -22,5 +22,5 @@ describe("frases", () => {
     expect(frasesError.length).toBeGreaterThan(2);
   });
 
-  test.todo("futuro: fixture del componente TopPicks con chibis");
+  test.todo("futuro: fixture del componente TopPicks con insignias");
 });
