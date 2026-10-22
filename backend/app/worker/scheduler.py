@@ -21,6 +21,13 @@ from app.services import evaluation
 
 logger = logging.getLogger("worker")
 
+
+def _espn_enabled() -> bool:
+    """ESPN en scheduler solo si se activa (prod compose; tests sin red)."""
+    from app.config import get_settings
+
+    return get_settings().espn_schedule == "1"
+
 # Ventanas previas al kickoff (horas antes); orden cronológico.
 WINDOWS: tuple[tuple[str, int], ...] = (("t24", 24), ("t6", 6), ("t1", 1))
 # Minutos post-kickoff para esperar estadísticas finales y reintentar.
@@ -77,7 +84,16 @@ class Scheduler:
         return ran
 
     def run_window(self, kind: str, match: models.Match) -> None:
-        """CSV si existe + regenera picks + notifica top picks."""
+        """ESPN fixtures (t24) + CSV si existe + regenera picks + notifica."""
+        if kind == "t24" and _espn_enabled():
+            # Agenda al día: programación ESPN de la semana.
+            try:
+                from app.ingestion import espn
+
+                espn.ingest_fixtures(self.db, days_back=2, days_forward=7)
+            except Exception:  # noqa: BLE001
+                logger.exception("fixtures ESPN fallaron para partido %s", match.id)
+                self.db.rollback()
         try:
             csv_loader.load_all("data")
         except Exception as exc:  # noqa: BLE001
@@ -110,6 +126,17 @@ class Scheduler:
             minutos = (now - kickoff).total_seconds() / 60
             if minutos < POST_RETRY_MINUTES[0] or self.done("evaluated", match.id):
                 continue
+            if _espn_enabled():
+                try:
+                    from app.ingestion import espn
+
+                    stored = espn.ingest_results_for_match(self.db, match)
+                    self.db.commit()
+                    if stored:
+                        logger.info("ESPN: %d stats de partido %s", stored, match.id)
+                except Exception:  # noqa: BLE001
+                    logger.exception("ESPN stats falló en partido %s", match.id)
+                    self.db.rollback()
             out = evaluation.evaluate_match(self.db, match.id)
             self.db.commit()
             self.mark("evaluated", match.id)

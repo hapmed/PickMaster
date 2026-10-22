@@ -11,9 +11,10 @@
 
 | Fuente | Datos | Acceso | Notas |
 |---|---|---|---|
+| **ESPN (site.api)** | Fixtures, resultados, alineaciones, stats por jugador por partido | Sin key, endpoint público de su web | **No oficial**: uso mínimo/respetuoso (3 llamadas por partido, UA identificable, pausa 3s). El 2026-10-22 entrega Liga MX completa |
 | **API-Football** | Fixtures, stats, lineups, injuries | API key (free/paid) | Cobertura amplia; revisar plan |
 | **Football-Data.org** | Fixtures, resultados, tablas | API key gratuita limitada | Buena base para empezar |
-| **TheSportsDB** | Equipos, jugadores, básicos | Key gratuita | Datos limitados |
+| **TheSportsDB** | Equipos, jugadores, básicos | Key gratuita | Datos limitados (1 próximo/pasado evento; sin stats por jugador) |
 | **Liga MX oficial** | Calendario, resultados | Web/posible API | Revisar términos |
 | **FBref** | Estadísticas históricas | Web | Revisar términos antes de scrapear |
 | **Draftea** | Reglas, salarios, concursos | App/Web | **Manual**; sin scraping ni automatización |

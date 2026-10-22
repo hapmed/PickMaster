@@ -21,6 +21,8 @@ services:
     env_file: .env
     environment:
       PICKMASTER_MC_SIMS: "10000"
+      # ESPN público (Liga MX sin key) en scheduler: agenda T-24h + stats post-partido
+      PICKMASTER_ESPN_SCHEDULE: "1"
     networks: [apps-net]
     # Fase 3: T-24h / T-6h / T-1h, evaluación post-partido y notificaciones.
     command: python -m app.worker.cli run-scheduler

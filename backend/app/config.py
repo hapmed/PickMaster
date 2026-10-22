@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     rules_file: str = "config/contest_rules.json"
     mc_sims: int = 10_000
     smtp_host: str = ""
+    espn_schedule: str = "0"  # "1" activa ingesta ESPN en el scheduler (prod)
+    espn_polite_seconds: float = 3.0
 
     @property
     def rules_path(self) -> pathlib.Path:

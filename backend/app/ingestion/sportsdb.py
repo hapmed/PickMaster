@@ -48,6 +48,7 @@ LIGA_MX_TEAMS = [
     "Club Tijuana",
     "FC Juarez",
     "Club Leon FC",
+    "Pachuca",
 ]
 
 # Pausa entre llamadas para el free tier (la key de prueba cierra a pocas req/min).
