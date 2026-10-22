@@ -1,4 +1,4 @@
-# Modelo — Drafteando
+# Modelo — PickMaster
 
 ## Objetivo
 

@@ -1,4 +1,4 @@
-# Arquitectura — Drafteando
+# Arquitectura — PickMaster
 
 ## Vista general
 
@@ -66,7 +66,7 @@ Fuentes (API/CSV)
 
 ## Despliegue
 
-- `/opt/apps/Drafteando` en el HomeLab.
+- `/opt/apps/PickMaster` en el HomeLab.
 - `docker compose up -d`.
 - Caddy en `127.0.0.1:8087`.
 - API y worker en la red interna.

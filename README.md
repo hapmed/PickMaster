@@ -1,4 +1,4 @@
-# Drafteando
+# PickMaster
 
 Asistente de **picks probabilísticos para Draftea · Liga MX**. Antes de cada
 partido entrega los jugadores con mayor probabilidad y puntos esperados, con
@@ -32,9 +32,9 @@ nivel de confianza y explicación.
 
 - Web: `127.0.0.1:8087`
 - API: `api:8000` (solo red interna)
-- Dominio: `drafteando.hapmed.qzz.io`
-- Repo: `hapmed/Drafteando`
-- Base: `drafteando` en el PostgreSQL existente
+- Dominio: `pickmaster.hapmed.qzz.io`
+- Repo: `hapmed/PickMaster`
+- Base: `pickmaster` en el PostgreSQL existente
 
 ## Documentación
 

@@ -1,10 +1,10 @@
-# AGENTS.md — Drafteando
+# AGENTS.md — PickMaster
 
 Guía obligatoria para el agente que programe este proyecto.
 
 ## 0. Regla de oro
 
-- Trabaja **solo** dentro de `/proyectos/Drafteando`.
+- Trabaja **solo** dentro de `/proyectos/PickMaster`.
 - **No** toques otros proyectos ni las bases `hapmed` / `evas_admin`.
 - Los secretos están en [`ACCESOS.md`](./ACCESOS.md): úsalos, **no los versiones**,
   no los pegues en logs ni en el chat.
@@ -16,7 +16,7 @@ Guía obligatoria para el agente que programe este proyecto.
 
 ## 1. Qué es
 
-**Drafteando** entrega **picks probabilísticos** para concursos de **Draftea ·
+**PickMaster** entrega **picks probabilísticos** para concursos de **Draftea ·
 Liga MX**. Antes de cada partido muestra los jugadores con mayor probabilidad y
 puntos esperados, con confianza y explicación.
 
@@ -35,8 +35,8 @@ puntos esperados, con confianza y explicación.
 | Salida | Picks por probabilidad, puntos esperados y confianza |
 | Hosting | HomeLab (`192.168.0.14`) |
 | Web | `127.0.0.1:8087` |
-| Dominio | `drafteando.hapmed.qzz.io` |
-| BD | `drafteando` en PostgreSQL existente |
+| Dominio | `pickmaster.hapmed.qzz.io` |
+| BD | `pickmaster` en PostgreSQL existente |
 | Stack | Python + FastAPI + PostgreSQL + SvelteKit |
 
 ## 3. Arquitectura
@@ -208,7 +208,7 @@ verificado lo que no se ejecutó.**
 - Falta elegir fuente de datos y API key.
 - Faltan las reglas exactas del concurso de Draftea.
 - Node/Python no están instalados en el contenedor de opencode.
-- Falta crear la base `drafteando`.
+- Falta crear la base `pickmaster`.
 - Falta configurar DNS.
 
 ## 15. Reporte al terminar
