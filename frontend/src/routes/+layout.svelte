@@ -4,41 +4,26 @@
   let { children } = $props();
 </script>
 
-<header>
-  <div class="velocidad">
-    <h1>⚽ PickMaster · Selecciona ya</h1>
-    <p class="subtitulo">
-      Picks con estadística, no con corazonadas. Frase del banquillo:
-      “cada tiro a puerta lleva su porcentaje adjunto”.
-    </p>
+<header class="barra-superior">
+  <div class="barra-superior__inner">
+    <div class="brand">
+      PickMaster <small>Liga MX · Apertura 2026-27</small>
+    </div>
+    <span class="meta">picks probabilísticos · Monte Carlo</span>
   </div>
 </header>
 
-<main>
+<main class="page">
   {@render children()}
 </main>
 
 <footer>
   <p>
-    <strong>PickMaster</strong> ⚽ Liga MX · picks probabilísticos con simulación
-    Monte Carlo · v0.2 · {year}
+    <strong>PickMaster</strong> · v0.2 · {year} · Los picks son estimaciones
+    estadísticas, no garantías.
   </p>
   <p>
     <strong>No es asesoría financiera ni garantía de resultados.</strong> Solo
-    para mayores de edad. Juega con responsabilidad — y recuerda: al modelo
-    también le sacan golazos.
+    para mayores de edad. Juega con responsabilidad.
   </p>
 </footer>
-
-<style>
-  main {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 1rem;
-  }
-  header {
-    max-width: 1080px;
-    margin: 1rem auto 0;
-    padding: 0 1rem;
-  }
-</style>

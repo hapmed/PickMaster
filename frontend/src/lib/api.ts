@@ -30,7 +30,7 @@ export type Match = {
   away_goals?: number | null;
 };
 
-export type ChibiTeam = {
+export type Squad = {
   team: string;
   kind: string;
   players: Array<{ id: number; name: string; position: string }>;
@@ -53,5 +53,5 @@ export const api = {
   topPicks: (matchId: number) =>
     get<{ top_picks: TopPick[] }>(`/api/picks/top?match_id=${matchId}`),
   lineups: (matchId: number) =>
-    get<{ teams: ChibiTeam[] }>(`/api/lineups?match_id=${matchId}`),
+    get<{ teams: Squad[] }>(`/api/lineups?match_id=${matchId}`),
 };

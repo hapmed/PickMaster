@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Chibi from "$lib/components/Chibi.svelte";
-  import { fraseAleatoria, frasesLineup, mensajesGol } from "$lib/phrases";
+  /** Convocatorias: chips compactos por posición (Apple-list-like). */
+  import PlayerBadge from "$lib/components/PlayerBadge.svelte";
 
   type Props = {
     teams: Array<{
@@ -11,68 +11,49 @@
   };
   let { teams }: Props = $props();
 
-  const cabeza = fraseAleatoria(frasesLineup);
-  const grito = fraseAleatoria(mensajesGol);
   const POSICIONES = ["GK", "DEF", "MID", "FWD"];
+  const POS_NAMES: Record<string, string> = {
+    GK: "Porteros",
+    DEF: "Defensas",
+    MID: "Medios",
+    FWD: "Delanteros",
+  };
 </script>
 
-<section>
-  <h2>🎓 Convocatorias: <span class="grito">{grito}</span></h2>
-  <p class="subtitulo">{cabeza.titulo} — {cabeza.quote}</p>
-
-  <div class="cols">
-    {#each teams as t}
-      <article>
-        <h3>{t.team}</h3>
-        <span class="meta">{"convocatoria "}{"estimada"}</span>
-        {#each POSICIONES as pos}
-          {@const enPos = t.players.filter((p) => p.position === pos)}
-          {#if enPos.length}
-            <h4>« {pos} ({enPos.length})»</h4>
-            <ul class="chibis">
-              {#each enPos as p (p.id)}
-                <li title={p.name}>
-                  <Chibi name={p.name} position={p.position} />
-                  <span class="meta">
-                    {p.name.replace(/^.*·/, "")}
-                  </span>
-                </li>
-              {/each}
-            </ul>
-          {/if}
-        {/each}
-      </article>
-    {/each}
+<section class="section">
+  <div class="section__head">
+    <h2>Convocatorias</h2>
+    <span class="section__tag">estimadas del roster · se confirman en T-1h</span>
   </div>
-</section>
 
-<style>
-  .cols {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  }
-  article {
-    border: 2px solid var(--gold);
-    border-radius: 14px;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.25);
-  }
-  h3 { font-size: 1.1rem; margin-bottom: 0.3rem; }
-  h4 { margin: 0.7rem 0 0.2rem; font-size: 0.85rem; }
-  .chibis {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-    gap: 0.5rem;
-  }
-  .chibis li {
-    display: grid;
-    justify-items: center;
-    font-size: 0.66rem;
-    gap: 0.15rem;
-  }
-  .grito { color: var(--gold); font-size: 0.95rem; text-transform: none; }
-</style>
+  {#if teams.length === 0}
+    <div class="card centrado">
+      <p class="meta">Convocatoria aún sin escoger en la pizarra.</p>
+    </div>
+  {:else}
+    <div class="equipos">
+      {#each teams as t (t.team)}
+        <div class="card equipo">
+          <h3>{t.team}</h3>
+          <span class="meta">{t.kind === "confirmed" ? "alineación confirmada" : "convocatoria estimada"} · {t.players.length} jugadores</span>
+          {#each POSICIONES as pos}
+            {@const enPos = t.players.filter((p) => p.position === pos)}
+            {#if enPos.length}
+              <div class="pos-bloque">
+                <p class="pos-titulo">{POS_NAMES[pos]} · {enPos.length}</p>
+                <ul class="chips">
+                  {#each enPos as p (p.id)}
+                    <li title={p.name}>
+                      <PlayerBadge name={p.name} position={p.position} />
+                      <span>{p.name.replace(/^.*·/, "")}</span>
+                    </li>
+                  {/each}
+                </ul>
+              </div>
+            {/if}
+          {/each}
+        </div>
+      {/each}
+    </div>
+  {/if}
+</section>

@@ -32,7 +32,7 @@ export const frasesError: Frase[] = [
 export const frasesLineup: Frase[] = [
   { titulo: "Convocatoria en pizarra", quote: "ojo: NO es el XI confirmado; eso llega en T-1h" },
   { titulo: "¡Llegó la constancia!", quote: "convocatoria estimada del roster real" },
-  { titulo: "Calentamiento completo", quote: "los chibis ya estiraron ligamentos" },
+  { titulo: "Calentamiento completo", quote: "la alineación ya estiró ligamentos" },
 ];
 
 export const frasesPicks: Frase[] = [
