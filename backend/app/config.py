@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./pickmaster.db"
     rules_file: str = "config/contest_rules.json"
     mc_sims: int = 10_000
+    smtp_host: str = ""
 
     @property
     def rules_path(self) -> pathlib.Path:

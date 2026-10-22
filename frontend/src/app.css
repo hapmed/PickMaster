@@ -1,0 +1,167 @@
+/* ====== PickMaster — Tema "Super Campeones" (CSS original, sin arte con copyright) ====== */
+:root {
+  --pitch-1: #0b3d1f;
+  --pitch-2: #14672f;
+  --pitch-3: #0a2b17;
+  --gold: #ffcf00;
+  --gold-2: #ff9d00;
+  --impact: #ffef7d;
+  --sky: #bde8ff;
+  --cake: #fffbe8;
+  --shadow: rgba(0, 0, 0, 0.45);
+}
+
+body {
+  margin: 0;
+  font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  color: var(--cake);
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0 24px, transparent 24px 48px),
+    linear-gradient(160deg, var(--pitch-1) 0%, var(--pitch-2) 55%, var(--pitch-3) 100%);
+  min-height: 100vh;
+}
+
+h1, h2, h3 {
+  font-family: "Impact", "Haettenschweiler", "Arial Black", sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--impact);
+  text-shadow:
+    0 0 4px rgba(255, 205, 0, 0.55),
+    2px 2px 0 var(--shadow);
+  margin: 0.4em 0;
+}
+
+.subtitulo {
+  font-style: italic;
+  color: var(--sky);
+  margin: 0.1em 0 0.9em;
+}
+
+/* Líneas de velocidad anime (flash de fondo en banners) */
+.velocidad {
+  position: relative;
+  overflow: hidden;
+  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(105deg, rgba(255, 255, 255, 0.09) 0 6px, transparent 6px 22px),
+    linear-gradient(120deg, #1033b3 0%, #0d2b7a 60%, #451a91 100%);
+  box-shadow: 0 8px 22px var(--shadow), inset 0 0 0 2px rgba(255, 207, 0, 0.6);
+}
+.velocidad::after {
+  content: "";
+  position: absolute;
+  inset: -40% -10%;
+  background: conic-gradient(from 90deg, transparent 0 80%, rgba(255, 255, 255, 0.18) 82% 86%, transparent 90%);
+  animation: whoosh 2.4s linear infinite;
+  pointer-events: none;
+}
+@keyframes whoosh {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Estrella dorada girando para cromos de picks */
+.estrella {
+  display: inline-block;
+  width: 18px;
+  color: var(--gold);
+  animation: girar 1.6s ease-in-out infinite alternate;
+}
+@keyframes girar {
+  from { transform: rotate(-12deg) scale(0.9); }
+  to { transform: rotate(14deg) scale(1.12); }
+}
+
+.tarjetas {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  padding: 0;
+  list-style: none;
+}
+
+.tarjeta {
+  border-radius: 14px;
+  padding: 1rem;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.13), rgba(0, 0, 0, 0.35));
+  border: 2px solid rgba(255, 207, 0, 0.55);
+  box-shadow: 0 6px 16px var(--shadow);
+}
+
+.tarjeta--ping {
+  animation: pulsoGOL 3.6s ease-in-out infinite;
+}
+@keyframes pulsoGOL {
+  0%, 100% { box-shadow: 0 6px 16px var(--shadow), 0 0 0 rgba(255, 207, 0, 0); }
+  25% { box-shadow: 0 6px 16px var(--shadow), 0 0 18px rgba(255, 190, 0, 0.6); }
+  75% { box-shadow: 0 6px 16px var(--shadow), 0 0 18px rgba(120, 220, 255, 0.35); }
+}
+
+.por-que {
+  list-style: none;
+  padding: 0;
+  margin: 0.6rem 0 0;
+  font-size: 0.86rem;
+}
+.por-que li {
+  margin-bottom: 0.28rem;
+  padding-left: 1em;
+  position: relative;
+}
+.por-que li::before {
+  content: "✦";
+  color: var(--gold);
+  position: absolute;
+  left: 0;
+}
+
+.chapita {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.chapita--GK { background: #d97706; border-color: #fcd34d; }
+.chapita--DEF { background: #1d4ed8; border-color: #93c5fd; }
+.chapita--MID { background: #16a34a; border-color: #86efac; }
+.chapita--FWD { background: #dc2626; border-color: #fca5a5; }
+
+.meta { font-size: 0.88rem; color: rgba(255, 255, 255, 0.86); }
+
+.barra {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff4a4a 0%, #ffcf00 60%, #4ad07a 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+.barra::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: transparent;
+}
+.barra__marcador {
+  position: absolute;
+  top: -3px;
+  width: 4px;
+  height: 16px;
+  background: #fff7ae;
+  border: 1px solid #b45309;
+  border-radius: 2px;
+  left: calc(var(--marcador, 0) * 1%);
+}
+
+footer {
+  padding: 2rem 1.25rem 3rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+footer strong { color: var(--gold); }

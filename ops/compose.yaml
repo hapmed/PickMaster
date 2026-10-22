@@ -9,7 +9,9 @@ services:
     environment:
       PICKMASTER_DATABASE_URL: postgresql+psycopg://pickmaster_app:${PG_CLAVE}@postgres:5432/pickmaster
       PICKMASTER_MC_SIMS: "10000"
+      VITE_API_URL: ""
     networks: [apps-net]
+    ports: []            # solo interna; web hace proxy
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
   worker:
@@ -21,9 +23,18 @@ services:
       PICKMASTER_DATABASE_URL: postgresql+psycopg://pickmaster_app:${PG_CLAVE}@postgres:5432/pickmaster
       PICKMASTER_MC_SIMS: "10000"
     networks: [apps-net]
-    # Fase 3: jobs T-24h/T-6h/T-1h y evaluación post-partido por schedule.
-    # Fase 1: contenedor dormido hasta que exista el scheduler.
-    command: ["python", "-m", "app.worker.cli", "init-db"]
+    # Fase 3: T-24h / T-6h / T-1h, evaluación post-partido y notificaciones.
+    command: python -m app.worker.cli run-scheduler
+
+  web:
+    build: ./frontend
+    container_name: pickmaster_web
+    restart: unless-stopped
+    environment:
+      # el SSR del SvelteKit consume la API interna
+      PUBLIC_API_URL: http://api:8000
+    networks: [apps-net]
+    # Caddy sirve este contenedor en 127.0.0.1:8087 (fuera de compose; ya existe en el HomeLab)
 
   redis:
     image: redis:7-alpine

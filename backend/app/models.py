@@ -266,3 +266,17 @@ class AuditLog(db.Base):
     detail: Mapped[str | None] = mapped_column(Text)
     actor: Mapped[str] = mapped_column(String(40), default="worker")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+
+
+class WorkerJob(db.Base):
+    """Ledger del scheduler: un registro por (ciclo, partido)."""
+
+    __tablename__ = "worker_jobs"
+    __table_args__ = (
+        UniqueConstraint("job_kind", "match_id", name="uq_worker_job"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_kind: Mapped[str] = mapped_column(String(20), index=True)  # t24|t6|t1|evaluated
+    match_id: Mapped[int] = mapped_column(ForeignKey("matches.id"), index=True)
+    run_at: Mapped[datetime] = mapped_column(DateTime, default=_now)

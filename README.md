@@ -50,36 +50,45 @@ nivel de confianza y explicación.
 
 ## Estado
 
-**Fase 1 implementada** (Fase 2/3/4 pendientes).
+**Fases 1–3 implementadas** (Fase 4 pendiente de datos históricos reales).
 
 | Bloque | Estado |
 |---|---|
-| Backend FastAPI + SQLAlchemy (todas las rutas de la tabla API) | ✅ verificadas en tests |
-| Motor de proyección: minutos + eventos + Monte Carlo 10k | ✅ determinista por `partido/jugador` |
-| Picks por posición con probabilidad, target, confianza y motivo | ✅ |
+| Backend FastAPI + SQLAlchemy (todas las rutas de la tabla API) | ✅ |
+| Motor de proyección: minutos + eventos + Monte Carlo 10k | ✅ determinista |
+| Picks por posición + **SELECCIÓN 5 ESTRELLAS** (probabilidad × puntos × confianza, con sección "¿Por qué?") | ✅ `/api/picks/top` |
 | Evaluación post-partido ✅🟡❌⚪ + hit rate + reporte | ✅ |
-| Ingesta manual por CSV (únicos datos permitidos) | ✅ CSV en `data/` |
-| Semilla demo determinista (solo para desarrollo) | ✅ |
-| Lint/mypy/pytest | ✅ `ruff`, `mypy app` y 20 tests pasando |
-| `docker compose config` | ⚠️ YAML validado con parser; Docker no disponible en contenedor dev |
-| Dashboard SvelteKit | ⬜ Fase 2 |
-| Jobs T-24h/T-6h/T-1h y notificación | ⬜ Fase 3 |
+| Ingesta manual por CSV (reglas, salarios, XI confirmado) | ✅ |
+| **Ingesta online TheSportsDB** (equipos + jugadores + calendario Liga MX, key pública `123`, acumulativa y respetando 429) | ✅ con datos reales |
+| Alineaciones/convocatorias estimadas del roster (`/api/lineups`) | ✅ |
+| Dashboard SvelteKit estilo **Super Campeones**: chibis SVG por jugador (determinista), alineaciones por posición probables, picks top con "¿Por qué?", mensajes hilarantes en carga/errores/estados vacíos | ✅ build OK |
+| Scheduler Fase 3 (T-24h / T-6h / T-1h + evaluación post-partido con ledger `worker_jobs`) | ✅ testado |
+| Notificación Telegram/email (interesados: env por claves) | ✅ módulo listo; sin credencial es irrelevante en dashboard |
+| Lint/mypy/pytest backend | ✅ 25 tests · ruff · mypy strict |
+| Dashboard checks | ✅ svelte-check 0 errors · vitest · vite build |
+| `docker compose` | ⚠️ YAML validado; Docker no disponible en este env |
+| Calendarización auto-arranque | ⬜ necesita Docker/host (compose listo) |
+| Backtest con torneos anteriores | ⬜ bloqueado por falta de datos históricos por jugador |
 
-Reglas de Draftea **aún pendientes de cargar**: mientras no exista
-`backend/config/contest_rules.json` con valores reales, el motor usa pesos
-PROVISIONALES (documentados en `app/rules.py`) y así lo marca `/api/health`.
-Salarios: vía `data/salaries.csv` o `data/players.csv`.
+### Datos actuales (sin usar datos demo)
 
-### Cómo correr (local)
+- **16 equipos, ~133 jugadores reales de Liga MX 2026-27** (ingesta TheSportsDB).
+- Próximo partido **Necaxa vs Juárez** (2026-10-24) con picks reales generados
+  y convocatorias por posición.
+- Límite honesto: sin estadísticas evento-a-evento del free tier la confianza
+  sale **35%** y las menciones de "pocos datos históricos" son correctas.
+  Con una API key premium (API-Football/Statful) se elevaría la precisión.
+
+### Cómo correr (local, ya funciona)
 
 ```bash
-cp backend/.env.example backend/.env   # ajusta PICKMASTER_DATABASE_URL
 cd backend && uv sync
-uv run python -m app.worker.cli seed-demo          # datos demo
-uv run python -m app.worker.cli generate-picks --match 7
-uv run python -m app.worker.cli evaluate --match 7
-uv run python -m app.worker.cli report --match 7
-uv run uvicorn app.main:app --port 8000            # API
+PICKMASTER_DATABASE_URL=sqlite:///./pickmaster.db uv run python -m app.worker.cli ingest-online
+PICKMASTER_DATABASE_URL=... uv run python -m app.worker.cli generate-picks --match 1
+
+cd frontend && npm install
+cd frontend && npm run dev        # proxy al API: configuras .env PUBLIC_API_URL
+cd frontend && npm run build       # adapter-node listo para Docker
 ```
 
 Pendiente de definir: fuente de datos y reglas exactas del concurso de Draftea.

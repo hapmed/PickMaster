@@ -45,6 +45,19 @@ def cmd_load_csv(args: argparse.Namespace) -> None:
     print(f"Cargados: {csv_loader.load_all(args.dir)}")
 
 
+def cmd_ingest_online(_args: argparse.Namespace) -> None:
+    """Ingesta online de Liga MX desde TheSportsDB (API pública de prueba)."""
+    from app.ingestion import sportsdb
+
+    session = new_session()()
+    try:
+        create_all(setup_engine())
+        counts = sportsdb.ingest_online(session)
+        print(f"Ingesta online: {counts}")
+    finally:
+        session.close()
+
+
 def cmd_generate_picks(args: argparse.Namespace) -> None:
     session = new_session()()
     try:
@@ -82,6 +95,13 @@ def cmd_report(args: argparse.Namespace) -> None:
         session.close()
 
 
+def cmd_scheduler(_args: argparse.Namespace) -> None:
+    """Loop continuo del worker (Fase 3)."""
+    from app.worker.scheduler import run_forever
+
+    run_forever()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser("pickmaster-worker")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -94,6 +114,7 @@ def main() -> None:
     csv_cmd = sub.add_parser("load-csv")
     csv_cmd.add_argument("--dir", default="data")
     csv_cmd.set_defaults(func=cmd_load_csv)
+    sub.add_parser("ingest-online").set_defaults(func=cmd_ingest_online)
     gen = sub.add_parser("generate-picks")
     gen.add_argument("--match", type=int, required=True)
     gen.set_defaults(func=cmd_generate_picks)
@@ -103,6 +124,7 @@ def main() -> None:
     rep = sub.add_parser("report")
     rep.add_argument("--match", type=int, required=True)
     rep.set_defaults(func=cmd_report)
+    sub.add_parser("run-scheduler").set_defaults(func=cmd_scheduler)
 
     args = parser.parse_args()
     args.func(args)

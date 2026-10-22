@@ -168,6 +168,7 @@ def save_projections(
     ).scalars().all()
     for row in existing:
         db.delete(row)
+    db.flush()  # asegura que UNIQUE (player, match, version) no choque en el mismo flush
 
     rows: list[models.Projection] = []
     for p in projections:

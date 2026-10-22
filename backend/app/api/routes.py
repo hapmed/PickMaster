@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_session
 from app.ingestion import csv_loader
-from app.models import Match, MatchReport, Pick, PickResult, Player, Projection, Team
+from app.models import Lineup, Match, MatchReport, Pick, PickResult, Player, Projection, Team
 from app.projection.picks import generate_picks
 from app.rules import get_rules
 from app.services import evaluation
@@ -107,6 +107,26 @@ def match_detail(match_id: int, db: Session = Depends(get_session)) -> dict[str,
     }
 
 
+def why_list(pick: Pick, proj: Projection | None) -> list[str]:
+    """Razones en lenguaje humano del porqué del pick (¿Por qué?)."""
+    why: list[str] = []
+    if proj is not None:
+        why.extend(s for s in (proj.explanation or "").split("; ") if s)
+        why.append(
+            f"simuló {pick.expected_points:.1f} pts de media (mediana {pick.target_points:g})"
+        )
+        if pick.value_per_salary:
+            why.append(f"valor por salario alto: {pick.value_per_salary:.2f} pts/mill$")
+        if pick.probability >= 0.9:
+            why.append("la simulación lo pone casi siempre arriba del target (90%+)")
+        elif pick.probability >= 0.75:
+            why.append("3 de 4 simulaciones lo dejan arriba del target")
+    if not why:
+        why.append("probabilidad por encima del umbral en Monte Carlo")
+    why.append("Suma de minutos proyectados × eventos (poisson) × reglas del concurso")
+    return why
+
+
 def pick_payload(db: Session, p: Pick) -> dict[str, Any]:
     player = db.get(Player, p.player_id)
     return {
@@ -137,6 +157,118 @@ def picks(match_id: int = Query(...), db: Session = Depends(get_session)) -> dic
         db.commit()
         rows = db.scalars(select(Pick).where(Pick.match_id == match_id)).all()
     return {"match_id": match_id, "picks": [pick_payload(db, p) for p in rows]}
+
+
+@router.get("/picks/top")
+def top_picks(
+    match_id: int = Query(...),
+    max_picks: int = Query(3, ge=1, le=10),
+    db: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """⭐ SELECCIÓN 5 ESTRELLAS ⭐ — picks sumamente probables (estadística + IA).
+
+    Ranking por score = probabilidad × puntos esperados × confianza, usando
+    las distribuciones Monte Carlo. Sólo entra quien supere el umbral de
+    probabilidad; si nadie lo pasa devuelve el mejorоciano igualmente
+    (etiqueta "riesgo Todoterreno", no "garantía").
+    """
+    if db.get(Match, match_id) is None:
+        raise HTTPException(status_code=404, detail="partido no encontrado")
+    rows = db.scalars(select(Pick).where(Pick.match_id == match_id)).all()
+    if not rows:
+        match = db.get(Match, match_id)
+        if match is None:
+            raise HTTPException(status_code=404, detail="partido no encontrado")
+        generate_picks(db, match)
+        db.commit()
+        rows = db.scalars(select(Pick).where(Pick.match_id == match_id)).all()
+
+    scored: list[tuple[float, Pick]] = []
+    for pick in rows:
+        score = pick.probability * max(pick.expected_points, 0.0) * pick.confidence
+        if pick.probability >= TOP_PICK_PROBABILITY:
+            scored.append((score, pick))
+    scored.sort(key=lambda pair: pair[0], reverse=True)
+    elite = scored[:max_picks]
+
+    result: list[dict[str, Any]] = []
+    for score, pick in elite:
+        proj = db.get(Projection, pick.projection_id) if pick.projection_id else None
+        result.append(
+            {
+                **pick_payload(db, pick),
+                "top_score": round(score, 4),
+                "why": why_list(pick, proj),
+                "statistics": {
+                    "model": proj.model_version if proj else "v0.1-mc",
+                    "mean": proj.mean if proj else None,
+                    "median": proj.median if proj else None,
+                    "p90": proj.p90 if proj else None,
+                    "minutes_expected": proj.minutes_expected if proj else None,
+                    "start_probability": proj.start_probability if proj else None,
+                    "confidence": proj.confidence if proj else None,
+                },
+                "gold_status": "SUPER SHOT ATÓMICO"
+                if pick.probability >= 0.9
+                else "MUY PROGRAMABLE",
+                "disclaimer": "Probabilidad estimada por simulación; nunca garantía",
+            }
+        )
+    return {"match_id": match_id, "top_picks": result}
+
+
+TOP_PICK_PROBABILITY = 0.75
+
+
+@router.get("/lineups")
+def lineups(
+    match_id: int = Query(...), db: Session = Depends(get_session)
+) -> dict[str, Any]:
+    """Alineaciones/convocatorias por equipo (chibis a la vista).
+
+    Devuelve roster disponible por team; kind probable = convocatoria
+    estimada. NO confundir con alineación confirmada (esa llega en T-1h).
+    """
+    m = db.get(Match, match_id)
+    if m is None:
+        raise HTTPException(status_code=404, detail="partido no encontrado")
+    rows = db.execute(
+        select(Lineup, Player)
+        .join(Player, Player.id == Lineup.player_id)
+        .where(Lineup.match_id == match_id)
+        .filter(Lineup.kind.in_(["probable", "confirmed"]))
+        .order_by(Lineup.kind.desc(), Player.position, Player.name)
+    ).all()
+
+    players_by_team: dict[int, dict[str, Any]] = {}
+    for _row, player in rows:
+        bucket = players_by_team.setdefault(
+            player.team_id or 0,
+            {"team": _team_name(db, player.team_id or 0), "kind": "probable", "players": []},
+        )
+        bucket["players"].append(
+            {
+                "id": player.id,
+                "name": player.name,
+                "position": player.position,
+                "salary": player.salary,
+            }
+        )
+    teams = db.scalars(
+        select(Team).where(Team.id.in_([m.home_team_id, m.away_team_id]))
+    ).all()
+
+    return {
+        "match_id": match_id,
+        "home": _team_name(db, m.home_team_id),
+        "away": _team_name(db, m.away_team_id),
+        "kind": "probable",
+        "note": "convocatoria estimada del roster; sin XI confirmado",
+        "teams": [
+            players_by_team.get(t.id, {"team": t.name, "kind": "probable", "players": []})
+            for t in teams
+        ],
+    }
 
 
 @router.get("/players/{player_id}/projection")
