@@ -48,6 +48,26 @@ class TestPicksAndResults:
         res404 = client.get("/api/picks", params={"match_id": 999999})
         assert res404.status_code == 404
 
+    def test_top_picks_fallback(self, client: TestClient) -> None:
+        """Devuelve top por score con explicación; si nadie pasa el umbral
+        activa el fallback etiquetando riesgo (ramas según confidence)."""
+        res = client.get("/api/matches")
+        match = next(m for m in res.json()["matches"] if m["status"] == "scheduled")
+        top = client.get(
+            "/api/picks/top", params={"match_id": match["id"], "max_picks": 3}
+        )
+        assert top.status_code == 200
+        rows = top.json()["top_picks"]
+        assert 0 < len(rows) <= 3, "siempre devuelve picks (umbral o fallback)"
+        scores = [p["top_score"] for p in rows]
+        assert scores == sorted(scores, reverse=True), "orden por score"
+        for p in rows:
+            assert "why" in p and p["why"], "explicación siempre presente"
+            if p["probability"] < 0.75:
+                assert p["risk_note"], "pick bajo el umbral lleva nota de riesgo"
+            else:
+                assert p["risk_note"] is None
+
     def test_player_projection(self, client: TestClient) -> None:
         res = client.get("/api/matches")
         match = next(m for m in res.json()["matches"] if m["status"] == "scheduled")

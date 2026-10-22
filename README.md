@@ -33,11 +33,14 @@ nivel de confianza y explicación.
 
 ## Puertos y dominio
 
-- Web: `127.0.0.1:8087`
-- API: `api:8000` (solo red interna)
-- Dominio: `pickmaster.hapmed.qzz.io`
+- Web: `127.0.0.1:8087` (host → contenedor web)
+- API: `127.0.0.1:8088` (host → contenedor api)
+- Dominio: `pickmaster.hapmed.qzz.io` (túnel Cloudflare `HomeLabServer`):
+  - `/` → dashboard SvelteKit, `/api/*` → API FastAPI (regla por `path` en ingress)
 - Repo: `hapmed/PickMaster`
-- Base: `pickmaster` en el PostgreSQL existente
+- Base: `pickmaster` en el PostgreSQL existente (usuario `pickmaster_app`)
+- Servidor: `/opt/apps/PickMaster` (compose + `.env` con credenciales; el `.env`
+  vive solo en el servidor, nunca en git)
 
 ## Documentación
 
@@ -64,15 +67,15 @@ nivel de confianza y explicación.
 | Dashboard SvelteKit estilo **Super Campeones**: chibis SVG por jugador (determinista), alineaciones por posición probables, picks top con "¿Por qué?", mensajes hilarantes en carga/errores/estados vacíos | ✅ build OK |
 | Scheduler Fase 3 (T-24h / T-6h / T-1h + evaluación post-partido con ledger `worker_jobs`) | ✅ testado |
 | Notificación Telegram/email (interesados: env por claves) | ✅ módulo listo; sin credencial es irrelevante en dashboard |
-| Lint/mypy/pytest backend | ✅ 25 tests · ruff · mypy strict |
+| Lint/mypy/pytest backend | ✅ 26 tests · ruff · mypy strict |
 | Dashboard checks | ✅ svelte-check 0 errors · vitest · vite build |
-| `docker compose` | ⚠️ YAML validado; Docker no disponible en este env |
-| Calendarización auto-arranque | ⬜ necesita Docker/host (compose listo) |
+| **Despliegue HomeLab** (compose `pickmaster_*` en apps-net, BD Postgres `pickmaster`, túnel Cloudflare con regla aditiva) | ✅ vivo en `pickmaster.hapmed.qzz.io` |
 | Backtest con torneos anteriores | ⬜ bloqueado por falta de datos históricos por jugador |
 
 ### Datos actuales (sin usar datos demo)
 
-- **16 equipos, ~133 jugadores reales de Liga MX 2026-27** (ingesta TheSportsDB).
+- **17 equipos, ~135 jugadores reales de Liga MX 2026-27** (ingesta TheSportsDB;
+  Mazatlán rescatado por id directo por una rareza del free tier).
 - Próximo partido **Necaxa vs Juárez** (2026-10-24) con picks reales generados
   y convocatorias por posición.
 - Límite honesto: sin estadísticas evento-a-evento del free tier la confianza

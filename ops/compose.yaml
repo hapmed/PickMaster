@@ -7,11 +7,11 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      PICKMASTER_DATABASE_URL: postgresql+psycopg://pickmaster_app:${PG_CLAVE}@postgres:5432/pickmaster
+      # la URL completa viene del .env (con contraseña); no se interpola aquí
       PICKMASTER_MC_SIMS: "10000"
-      VITE_API_URL: ""
     networks: [apps-net]
-    ports: []            # solo interna; web hace proxy
+    ports:
+      - "127.0.0.1:8088:8000"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
   worker:
@@ -20,7 +20,6 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      PICKMASTER_DATABASE_URL: postgresql+psycopg://pickmaster_app:${PG_CLAVE}@postgres:5432/pickmaster
       PICKMASTER_MC_SIMS: "10000"
     networks: [apps-net]
     # Fase 3: T-24h / T-6h / T-1h, evaluación post-partido y notificaciones.
@@ -34,7 +33,8 @@ services:
       # el SSR del SvelteKit consume la API interna
       PUBLIC_API_URL: http://api:8000
     networks: [apps-net]
-    # Caddy sirve este contenedor en 127.0.0.1:8087 (fuera de compose; ya existe en el HomeLab)
+    ports:
+      - "127.0.0.1:8087:3000"
 
   redis:
     image: redis:7-alpine

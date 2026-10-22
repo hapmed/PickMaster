@@ -1,0 +1,48 @@
+{
+  "tunnel_id": "a3a016f9-6058-4a90-965e-3c9ad10c504e",
+  "version": 19,
+  "config": {
+    "ingress": [
+      {
+        "service": "http://localhost:8080",
+        "hostname": "www.hapmed.qzz.io"
+      },
+      {
+        "service": "http://localhost:8081",
+        "hostname": "evas.hapmed.qzz.io"
+      },
+      {
+        "service": "http://localhost:3552",
+        "hostname": "docker.hapmed.qzz.io"
+      },
+      {
+        "service": "http://localhost:4096",
+        "hostname": "opencode.hapmed.qzz.io"
+      },
+      {
+        "service": "http://localhost:8083",
+        "hostname": "homelabdash.hapmed.qzz.io"
+      },
+      {
+        "service": "http://localhost:8084",
+        "hostname": "aldeabit.hapmed.qzz.io"
+      },
+      {
+        "service": "http://localhost:8082",
+        "hostname": "happytrading.hapmed.qzz.io"
+      },
+      {
+        "service": "http://localhost:8086",
+        "hostname": "puzzlebit.hapmed.qzz.io"
+      },
+      {
+        "service": "http_status:404"
+      }
+    ],
+    "warp-routing": {
+      "enabled": false
+    }
+  },
+  "source": "cloudflare",
+  "created_at": "2026-10-21T22:18:15.124686Z"
+}

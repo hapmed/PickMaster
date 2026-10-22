@@ -188,6 +188,14 @@ def top_picks(
         score = pick.probability * max(pick.expected_points, 0.0) * pick.confidence
         if pick.probability >= TOP_PICK_PROBABILITY:
             scored.append((score, pick))
+    fallback = not scored
+    if fallback:
+        # Nadie superó el umbral (p. ej. BASE baja por falta de historial):
+        # igualmente devolvemos el top por score, etiquetándolo honesto.
+        scored = [
+            (pick.probability * max(pick.expected_points, 0.0) * pick.confidence, pick)
+            for pick in rows
+        ]
     scored.sort(key=lambda pair: pair[0], reverse=True)
     elite = scored[:max_picks]
 
@@ -211,6 +219,12 @@ def top_picks(
                 "gold_status": "SUPER SHOT ATÓMICO"
                 if pick.probability >= 0.9
                 else "MUY PROGRAMABLE",
+                "risk_note": (
+                    "Bajo el umbral de probabilidad: información histórica "
+                    "limitada; tratado como pick de riesgo, no garantía"
+                    if fallback
+                    else None
+                ),
                 "disclaimer": "Probabilidad estimada por simulación; nunca garantía",
             }
         )

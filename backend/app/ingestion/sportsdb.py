@@ -53,6 +53,10 @@ LIGA_MX_TEAMS = [
 # Pausa entre llamadas para el free tier (la key de prueba cierra a pocas req/min).
 SLEEP_SECONDS = 11.0
 
+# La key gratuita de TheSportsDB cataloga a algunos equipos de Liga MX con una
+# liga incorrecta ("_Defunct Soccer Teams"); se rescatan por id directo.
+TEAM_ID_FALLBACK: dict[str, str] = {"Mazatlan": "139995"}
+
 POSITION_MAP: dict[str, str] = {
     "goalkeeper": "GK",
     "defender": "DEF",
@@ -128,7 +132,10 @@ def upsert_team(db: Session, team: dict[str, Any]) -> models.Team:
         db.add(row)
         db.flush()
     row.name = team["strTeam"]
-    row.short_name = team.get("strTeamAlternate") or team.get("strShortCode") or row.short_name
+    # strTeamAlternate trae una lista larga separada por comas; nos quedamos
+    # con el primer alias y truncamos al ancho de la columna (varchar(20)).
+    alt = (team.get("strTeamAlternate") or "").split(",")[0].strip()
+    row.short_name = alt[:20] or team.get("strShortCode", "")[:20] or row.short_name
     row.league = team.get("strLeague") or row.league or "Liga MX"
     return row
 
@@ -322,6 +329,14 @@ def ingest_online(
             logger.info("%s ya está ingestado; salto (carga acumulativa)", name)
             continue
         team = search_team(name)
+        if team is None and name in TEAM_ID_FALLBACK:
+            tid = TEAM_ID_FALLBACK[name]
+            data = fetch_json(f"{BASE}/lookupteam.php?id={tid}")
+            found = (data.get("teams") or [None])[0]
+            if found:
+                found["strLeague"] = "Liga MX"
+                found["strLeague2"] = "Liga MX"
+                team = found
         if team is None:
             logger.warning("Equipo no encontrado en API: %s", name)
             continue
