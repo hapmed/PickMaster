@@ -11,13 +11,18 @@ export async function load({ url }) {
     if (!elegido) {
       return { estado: "vacio", frase: fraseAleatoria(frasesVacio) };
     }
-    const [picks, top] = await Promise.all([api.picks(elegido), api.topPicks(elegido)]);
+    const [picks, top, prom] = await Promise.all([
+      api.picks(elegido),
+      api.topPicks(elegido),
+      api.prediction(elegido).catch(() => null),
+    ]);
     return {
       estado: "ok",
       partidoId: elegido,
       matches,
       picks: picks.picks,
       top: top.top_picks,
+      pronostico: prom,
     };
   } catch {
     return { estado: "error", frase: fraseAleatoria(frasesError) };

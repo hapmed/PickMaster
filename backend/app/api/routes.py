@@ -14,6 +14,7 @@ from app.models import Lineup, Match, MatchReport, Pick, PickResult, Player, Pro
 from app.projection.picks import generate_picks
 from app.rules import get_rules
 from app.services import evaluation
+from app.services.prediction import match_prediction
 
 router = APIRouter(prefix="/api")
 
@@ -233,6 +234,17 @@ def top_picks(
 
 
 TOP_PICK_PROBABILITY = 0.75
+
+
+@router.get("/matches/{match_id}/prediction")
+def match_prediction_route(
+    match_id: int, db: Session = Depends(get_session)
+) -> dict[str, Any]:
+    """Pronóstico del partido: quién gana, marcador probable y quién anota."""
+    m = db.get(Match, match_id)
+    if m is None:
+        raise HTTPException(status_code=404, detail="partido no encontrado")
+    return match_prediction(db, m)
 
 
 @router.get("/lineups")

@@ -91,6 +91,21 @@ class TestPicksAndResults:
         }
         assert all(v >= 0 for v in events.values())
 
+    def test_match_prediction(self, client: TestClient) -> None:
+        res = client.get("/api/matches")
+        match = next(m for m in res.json()["matches"] if m["status"] == "scheduled")
+        pred = client.get(f"/api/matches/{match['id']}/prediction")
+        assert pred.status_code == 200
+        body = pred.json()
+        # las tres probabilidades cubren ~1 y están ordenadas por mayor detalle
+        total = body["p_home"] + body["p_draw"] + body["p_away"]
+        assert 0.97 <= total <= 1.03
+        assert 0 <= body["most_likely_score"][0] <= 8
+        # anotadores: ordenados por probabilidad desc, con P(0..1)
+        probs = [s["prob_score"] for s in body["scorers"]]
+        assert probs == sorted(probs, reverse=True)
+        assert all(0 < p < 1 for p in probs)
+
     def test_results_summary_empty(self, client: TestClient) -> None:
         res = client.get("/api/results/summary")
         assert res.status_code == 200

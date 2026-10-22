@@ -266,6 +266,81 @@ button:focus-visible {
   width: calc(var(--marcador, 0) * 1%);
 }
 
+/* ---------- pronóstico del partido ---------- */
+.pron { padding: 12px; display: grid; gap: 10px; }
+.pron__gana {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.pron__chip {
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  text-align: center;
+  line-height: 1.25;
+}
+.pron__chip strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.pron__chip.activo {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+.pron__chip.activo strong { color: #fff; }
+.pron__marcador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+}
+.pron__score {
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.pron__gol {
+  font-size: 0.72rem;
+  color: var(--ink-2);
+  max-width: 110px;
+}
+.pron__nota { text-align: center; margin: 0; }
+.pron__anota { margin-top: 10px; padding: 12px; }
+.anota-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--chip-bg);
+  border-radius: 10px;
+}
+.pron__anota .rows { gap: 4px; }
+.anota-row .chip { flex-shrink: 0; }
+.anota-row__name {
+  font-weight: 600;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+.anota-row__barra { flex: 1; margin: 0; }
+.anota-row__num {
+  font-size: 0.72rem;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 /* ---------- convocatorias: chips ---------- */
 .equipos {
   display: grid;

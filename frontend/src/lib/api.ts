@@ -65,8 +65,28 @@ export type Squad = {
   players: Array<{ id: number; name: string; position: string }>;
 };
 
-export type Proyeccion = {
-  player_id: number;
+export type Pronostico = {
+  match_id: number;
+  home: string;
+  away: string;
+  home_goals_expected: number;
+  away_goals_expected: number;
+  p_home: number;
+  p_draw: number;
+  p_away: number;
+  most_likely_score: [number, number];
+  scorers: Array<{
+    player_id: number;
+    player: string;
+    position: string;
+    team: string;
+    goals_expected: number;
+    prob_score: number;
+  }>;
+  disclaimer: string;
+};
+
+export type Proyeccion = {  player_id: number;
   match_id: number;
   model: string;
   mean: number;
@@ -102,4 +122,6 @@ export const api = {
     get<{ teams: Squad[] }>(`/api/lineups?match_id=${matchId}`),
   projection: (playerId: number, matchId: number) =>
     get<Proyeccion>(`/api/players/${playerId}/projection?match_id=${matchId}`),
+  prediction: (matchId: number) =>
+    get<Pronostico>(`/api/matches/${matchId}/prediction`),
 };
