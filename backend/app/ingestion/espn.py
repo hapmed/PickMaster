@@ -359,7 +359,8 @@ def ingest_results(
     """Resultados + stats de jugadores para partidos terminados recientes."""
     counts = {"finished": 0, "stats": 0}
     today = datetime.now(UTC).date()
-    for offset in range(-days_back, 0):
+    # incluye el día actual: los partidos de esta noche terminan en su fecha
+    for offset in range(-days_back, 1):
         day = today + timedelta(days=offset)
         for event in scoreboard(day.isoformat(), polite_seconds=polite_seconds):
             if _event_status(event) != "finished":

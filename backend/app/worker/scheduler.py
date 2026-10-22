@@ -116,12 +116,15 @@ class Scheduler:
         notify("\n".join(lines), channel="dashboard")
 
     def evaluate_loop(self, now: datetime) -> list[int]:
-        """Evalúa partidos con ≥60 min desde el kickoff (reintento implícito)."""
+        """Evalúa partidos terminados o bastantes pasados del kickoff.
+
+        Un partido `scheduled` con kickoff >60 min pasado todavía puede
+        carecer de marcador: ESPN lo marca `finished` y trae stats; sportsdb
+        también lo hace. Cada partido se evalúa una sola vez (ledger).
+        """
         ran: list[int] = []
-        matches = self.db.scalars(
-            select(models.Match).where(models.Match.status == "finished")
-        ).all()
-        for match in matches:
+        candidates = self.db.scalars(select(models.Match)).all()
+        for match in candidates:
             kickoff = _aware(match.kickoff)
             minutos = (now - kickoff).total_seconds() / 60
             if minutos < POST_RETRY_MINUTES[0] or self.done("evaluated", match.id):
@@ -137,6 +140,8 @@ class Scheduler:
                 except Exception:  # noqa: BLE001
                     logger.exception("ESPN stats falló en partido %s", match.id)
                     self.db.rollback()
+            if match.status != "finished":
+                continue  # sin marcador aún: se reintenta en la próxima pasada
             out = evaluation.evaluate_match(self.db, match.id)
             self.db.commit()
             self.mark("evaluated", match.id)

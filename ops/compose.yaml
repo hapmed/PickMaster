@@ -9,7 +9,10 @@ services:
     environment:
       # la URL completa viene del .env (con contraseña); no se interpola aquí
       PICKMASTER_MC_SIMS: "10000"
-    networks: [apps-net]
+    networks:
+      apps-net:
+        # alias ÚNICO: 'api' en apps-net pertenece a otro proyecto (ops-api)
+        aliases: [pickmaster-api]
     ports:
       - "127.0.0.1:8088:8000"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
@@ -32,8 +35,8 @@ services:
     container_name: pickmaster_web
     restart: unless-stopped
     environment:
-      # el SSR del SvelteKit consume la API interna
-      PUBLIC_API_URL: http://api:8000
+      # el SSR del SvelteKit consume la API interna (alias único de compose)
+      PUBLIC_API_URL: http://pickmaster-api:8000
     networks: [apps-net]
     ports:
       - "127.0.0.1:8087:3000"
