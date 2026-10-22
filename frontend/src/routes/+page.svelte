@@ -24,9 +24,9 @@
     </nav>
   {/if}
 
+  <MatchPrediction pronostico={data.pronostico ?? null} />
   <TopPicks top={data.top ?? []} matchId={data.partidoId} />
   <Picks picks={data.picks ?? []} matchId={data.partidoId} />
-  <MatchPrediction pronostico={data.pronostico ?? null} />
 {:else if data.estado === "vacio"}
   <div class="card centrado section">
     <h2>Sin partidos</h2>
