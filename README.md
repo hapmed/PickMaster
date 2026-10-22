@@ -50,6 +50,36 @@ nivel de confianza y explicación.
 
 ## Estado
 
-Especificación lista. **Implementación pendiente.**
+**Fase 1 implementada** (Fase 2/3/4 pendientes).
+
+| Bloque | Estado |
+|---|---|
+| Backend FastAPI + SQLAlchemy (todas las rutas de la tabla API) | ✅ verificadas en tests |
+| Motor de proyección: minutos + eventos + Monte Carlo 10k | ✅ determinista por `partido/jugador` |
+| Picks por posición con probabilidad, target, confianza y motivo | ✅ |
+| Evaluación post-partido ✅🟡❌⚪ + hit rate + reporte | ✅ |
+| Ingesta manual por CSV (únicos datos permitidos) | ✅ CSV en `data/` |
+| Semilla demo determinista (solo para desarrollo) | ✅ |
+| Lint/mypy/pytest | ✅ `ruff`, `mypy app` y 20 tests pasando |
+| `docker compose config` | ⚠️ YAML validado con parser; Docker no disponible en contenedor dev |
+| Dashboard SvelteKit | ⬜ Fase 2 |
+| Jobs T-24h/T-6h/T-1h y notificación | ⬜ Fase 3 |
+
+Reglas de Draftea **aún pendientes de cargar**: mientras no exista
+`backend/config/contest_rules.json` con valores reales, el motor usa pesos
+PROVISIONALES (documentados en `app/rules.py`) y así lo marca `/api/health`.
+Salarios: vía `data/salaries.csv` o `data/players.csv`.
+
+### Cómo correr (local)
+
+```bash
+cp backend/.env.example backend/.env   # ajusta PICKMASTER_DATABASE_URL
+cd backend && uv sync
+uv run python -m app.worker.cli seed-demo          # datos demo
+uv run python -m app.worker.cli generate-picks --match 7
+uv run python -m app.worker.cli evaluate --match 7
+uv run python -m app.worker.cli report --match 7
+uv run uvicorn app.main:app --port 8000            # API
+```
 
 Pendiente de definir: fuente de datos y reglas exactas del concurso de Draftea.

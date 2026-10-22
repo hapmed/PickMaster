@@ -1,0 +1,36 @@
+name: pickmaster
+
+services:
+  api:
+    build: ./backend
+    container_name: pickmaster_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PICKMASTER_DATABASE_URL: postgresql+psycopg://pickmaster_app:${PG_CLAVE}@postgres:5432/pickmaster
+      PICKMASTER_MC_SIMS: "10000"
+    networks: [apps-net]
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  worker:
+    build: ./backend
+    container_name: pickmaster_worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PICKMASTER_DATABASE_URL: postgresql+psycopg://pickmaster_app:${PG_CLAVE}@postgres:5432/pickmaster
+      PICKMASTER_MC_SIMS: "10000"
+    networks: [apps-net]
+    # Fase 3: jobs T-24h/T-6h/T-1h y evaluación post-partido por schedule.
+    # Fase 1: contenedor dormido hasta que exista el scheduler.
+    command: ["python", "-m", "app.worker.cli", "init-db"]
+
+  redis:
+    image: redis:7-alpine
+    container_name: pickmaster_redis
+    restart: unless-stopped
+    networks: [apps-net]
+
+networks:
+  apps-net:
+    external: true
